@@ -1,0 +1,330 @@
+"use client";
+
+import { Lead } from "@/types/leads/leads";
+import { SetStateAction, useState } from "react";
+import { BsCheckAll } from "react-icons/bs";
+import Image from "next/image";
+import { MdModeEdit, MdDelete, MdQuestionAnswer } from "react-icons/md";
+import { RiRobot2Line } from "react-icons/ri";
+import { Intention } from "@/types/empresa/intention";
+import { FaWhatsapp } from "react-icons/fa";
+import {IoLogoWhatsapp }from "react-icons/io"
+export default function MessageIntentsCompanie({
+  leadsData,
+}: {
+  leadsData: Array<Lead>;
+}) {
+  //console.log(leadsData, "Leads");
+
+  //const [leadList, setIntentList] = useState<Array<Lead>>(leadsData);
+  const [intentListMessage, setIntentListMessage] =
+    useState<Array<Lead>>(leadsData);
+
+  //console.log(leadsData, "Leads");
+
+  const [selectedIntent, setSelectedIntent] = useState<Array<{lead:Lead}> | null>(
+    null
+  );
+  const [selectedIntentColor, setSelectedIntentColor] = useState(null);
+  const [selectedTab, setSelectedTab] = useState("utterances");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleIntentClick = (lead: Lead) => {
+    console.log(selectedIntentColor, "Leads");
+    setIsLoading(true);
+    setSelectedIntentColor(lead);
+    setTimeout(() => {
+      setSelectedIntent(lead);
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const handleTabClick = (tab: string) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setSelectedTab(tab);
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const handleStatusFilter = (status) => {
+    setFilteredStatus(status);
+  };
+  
+  // Dentro do componente principal...
+  const [filteredStatus, setFilteredStatus] = useState("REPLIED");
+
+  const LeadStatus = [
+    { id: 'STARTED', label: 'Iniciados' },
+    { id: 'REPLIED', label: 'Respondidos' },
+    { id: 'STOPPED', label: 'Stop' },
+    { id: 'NOTSCHEDULED', label: 'Agendados' }
+  ];
+
+  return (
+    <div className="col-span-12 bg-white  shadow-default  dark:bg-neutral-950 xl:col-span-12 ">
+     
+
+      <div className="grid grid-cols-12 gap-0 md:mt-0 md:gap-0 2xl:mt-0 2xl:gap-0">
+        {/* <div className="col-span-12 border border-stroke dark:bg-neutral-800/3 p-7.5 shadow-default dark:border-strokedark dark:bg-aibitMenu xl:col-span-2 border-neutral-900 shadow-lg rounded-2xl p-4">
+          <h2 className="text-rose-700 text-lg font-semibold mb-4">
+            Leads Iniciados
+          </h2>
+          {leadsData.leads
+            .filter((lead:Lead) => lead.status === "REPLIED")
+            .map((lead:Lead) => (
+              <div
+              key={`ld-rl-${lead.id}`}
+                onClick={(e) => {
+                  e.stopPropagation(); // Evita a propagação do evento
+                  handleIntentClick(lead);
+                }}
+                className="mb-2 bg-strokedark m-5 flex gap-3 items-center cursor-pointer border border-neutral-900"
+              >
+                 <div className="flex flex-row p-4">
+                 <div className="flex flex-col p-4">
+                 <span
+                    className={`left-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-neutral-700 ${
+                      selectedIntentColor?.id === lead.id
+                        ? "bg-green-700"
+                        : "bg-transparent"
+                    }`}
+                  ></span>
+                 
+                  {selectedIntentColor?.id === lead.id ? <IoLogoWhatsapp className="text-green-800 size-8"/> : <FaWhatsapp className="text-neutral-900 size-8"/>}
+                 </div>
+                
+                 <div className="flex flex-col p-4">
+                 <span className="text-white text-base font-bold ml-2">
+                    {lead.name}
+                  </span>
+                  <span className=" text-gray-700 text-base font-bold ml-2">
+                    {lead.phone}
+                  </span>
+                 </div>
+                </div>
+              </div>
+            ))}
+        </div>
+        <div className="col-span-12 border border-stroke dark:bg-neutral-800/3 p-7.5 shadow-default dark:border-strokedark dark:bg-aibitMenu xl:col-span-2 border-neutral-900 shadow-lg rounded-2xl p-4">
+          <h2 className="text-green-800 text-lg font-semibold mb-4">
+            Leads Respondidos
+          </h2>
+          {leadsData.leads
+            .filter((lead:Lead) => lead.status === "NOTSCHEDULED")
+            .map((lead:Lead) => (
+              <div
+              key={`ld-nt-${lead.id}`}
+                onClick={(e) => {
+                  e.stopPropagation(); // Evita a propagação do evento
+                  handleIntentClick(lead);
+                }}
+                className="mb-2 bg-strokedark m-5 flex gap-3 items-center cursor-pointer border border-neutral-900"
+              >
+                 <div className="flex flex-row p-4">
+                 <div className="flex flex-col p-4">
+                 <span
+                    className={`left-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-neutral-700 ${
+                      selectedIntentColor?.id === lead.id
+                        ? "bg-green-700"
+                        : "bg-transparent"
+                    }`}
+                  ></span>
+                 
+                  {selectedIntentColor?.id === lead.id ? <IoLogoWhatsapp className="text-green-800 size-8"/> : <FaWhatsapp className="text-neutral-900 size-8"/>}
+                 </div>
+                
+                 <div className="flex flex-col p-4">
+                 <span className="text-white text-base font-bold ml-2">
+                    {lead.name}
+                  </span>
+                  <span className="text-white text-base font-bold ml-2">
+                    {lead.phone}
+                  </span>
+                 </div>
+                </div>
+              </div>
+            ))}
+        </div> */}
+ <div className="col-span-12  border-stroke dark:bg-neutral-800/50  shadow-default dark:border-strokedark  dark:bg-aibitMenu xl:col-span-2
+ border-r-[1px]  border-rose-700 shadow-lg  ">
+ <div className="mt-4 grid grid-cols-4 gap-2 md:mt-2 md:gap-2 2xl:mt-2 2xl:gap-2">
+        {LeadStatus.map(status => (
+          <button
+            key={status.id}
+            className="bg-rose-700 hover:bg-rose-900 text-white py-2 px-2 rounded"
+            onClick={() => handleStatusFilter(status.id)} // Supondo que você tenha uma função para lidar com o clique nos botões
+          >
+            <span className="text-white text-[10px]">{status.label}</span>
+          </button>
+        ))}
+      </div>
+
+        {leadsData.leads
+  .filter((lead) => lead.status === filteredStatus)
+  .map((lead) => (
+    <div
+    key={`ld-nt-${lead.id}`}
+      onClick={(e) => {
+        e.stopPropagation(); // Evita a propagação do evento
+        handleIntentClick(lead);
+      }}
+      className=" bg-strokedark  flex  items-start cursor-pointer border-b-[0.5px] border-neutral-500 py-2 hover:dark:bg-neutral-800 transition-all"
+    >
+       <div className="flex flex-row  w-full">
+       <div className="flex flex-col pl-2 py-1 justify-center items-center gap-y-3">
+       <span className="text-white text-base font-bold ml-2 p-2 dark:bg-rose-700 rounded-full">
+            {lead.name.substr(0, 2).toUpperCase()} {/* Obtém as duas primeiras letras do nome */}
+          </span>
+       <span
+          className={`left-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-neutral-700 ${
+            selectedIntentColor?.id === lead.id
+              ? "bg-green-700"
+              : "bg-transparent"
+          }`}
+        ></span>
+       
+        {/* {selectedIntentColor?.id === lead.id ? <IoLogoWhatsapp className="text-green-800 size-8"/> : <FaWhatsapp className="text-neutral-500 size-8"/>} */}
+       </div>
+      
+       <div className="flex flex-col p-4">
+       <span className="text-white text-base font-bold ml-2">
+          {lead.name}
+        </span>
+        <span className="text-white text-base font-bold ml-2">
+          {lead.phone}
+        </span>
+       </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+        {selectedIntent && (
+          <IntentDetails
+            lead={selectedIntent}
+            selectedTab={selectedTab}
+            onTabClick={handleTabClick}
+            isLoading={isLoading}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+const formatTimestamp = (timestamp: string | number | Date) => {
+  const date = new Date(timestamp);
+  const options = { 
+    year: 'numeric', 
+    month: 'numeric', 
+    day: 'numeric', 
+    hour: 'numeric', 
+    minute: 'numeric', 
+    second: 'numeric' 
+  };
+  return date.toLocaleString('pt-BR', options); // Ajuste o 'pt-BR' conforme a localização desejada
+};
+
+const IntentDetails = ({
+  lead,
+  selectedTab,
+  onTabClick,
+  isLoading,
+}: {
+  lead: Lead; // Alterei de Empresa para any
+  selectedTab: string;
+  onTabClick: (tab: string) => void;
+  isLoading: boolean;
+}) => {
+  //console.log(lead, "meu lead a ser distribuido");
+
+  return (
+    <div
+      className="col-span-12  h-screen min-h-screen  max-h-screen dark:bg-neutral-800/30 bg-white p-7.5 shadow-default dark:border-strokedark  xl:col-span-10 relative
+     shadow-lg  pb-4"
+    >
+     
+      {lead &&
+        Array.isArray(lead.dialog) && (
+          <div className="flex flex-rowitems-center pl-2 gap-2 w-full bg-black py-4 " style={{zIndex:'99999!important'}}>
+           
+            <span className="text-white text-base font-bold  p-2 dark:bg-rose-700 rounded-full">
+            {lead.name.substr(0, 2).toUpperCase()} {/* Obtém as duas primeiras letras do nome */}
+          </span>
+          <span className="text-white text-base font-bold  p-2  rounded-full">{lead.name}</span>
+          </div>
+        )
+      }
+      {selectedTab === "utterances" && (
+        <div className="mb-4  sticky top-0 overflow-auto md:sticky bottom-0 pb-5 min-h-screen  max-h-screen">
+         
+           
+            {/* {lead && Array.isArray(lead.dialog) && lead.dialog.map((item: any, index: number) => (
+              <div key={index} className="flex flex-row-reverse items-center p-4 w-full">
+                <div className="h-auto w-auto p-6 bg-[#202020] dark:bg-green-800 tex-white dark:text-white rounded-tl-[15px] rounded-bl-[15px] rounded-br-[15px]">
+                  <span>{item.messages.text.body}</span> 
+                </div>
+              </div>
+            ))} */}
+
+           {lead &&
+  Array.isArray(lead.dialog) &&
+  lead.dialog.map((item: any, index: number) => (
+    <>
+   
+      <div
+        key={`ld-wp-${index}`}
+        className="flex flex-row-reverse items-center p-2 w-full"
+        style={{ zIndex: "1", position: "relative" }}
+      >
+        {item.who === "lead" &&
+          item.messages &&
+          item.messages.map((message: any, index: number) => (
+            <div
+              key={index}
+              className="flex flex-col h-auto w-auto p-2 bg-[#202020] dark:bg-green-800/40 text-white dark:text-white rounded-tl-[15px] rounded-bl-[15px] rounded-br-[15px]"
+            >
+              {/* Exibindo o nome do lead */}
+              <span className="py-1 text-[14px]"> {lead.name}:</span>
+              <span className="text-base">{message.text?.body || ""}</span>
+              <span>{formatTimestamp(message.timestamp)}</span> {/* Exibir timestamp */}
+            </div>
+          ))}
+      </div>
+      <div
+        key={`ld-wp-${index}`}
+        className="flex flex-row items-center p-2 w-full"
+        style={{ zIndex: "1", position: "relative" }}
+      >
+        {item.who === "vera" && (
+          <div className="flex flex-col h-auto w-5/12 p-2 bg-[#202020] text-white dark:text-white rounded-tr-[15px] rounded-bl-[15px] rounded-br-[15px]">
+            <span className="py-3">IA:</span>
+            <span>{item.message?.text?.body || ""}</span>
+            <span>{formatTimestamp(item.timestamp)}</span> {/* Exibir timestamp */}
+          </div>
+        )}
+      </div>
+    </>
+  ))}
+         
+        </div>
+      )}
+
+      {/* <div
+    
+    style={{
+      zIndex:0,
+      position: 'absolute',
+      top: '0px',
+      left: '0px',
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+      backgroundImage: 'url(/assets/WhatsappBg-D5K1m_Ya.png)',
+      backgroundRepeat: 'repeat',
+      backgroundSize: '400px' // Ajuste o tamanho conforme necessário
+    }} ></div> */}
+    </div>
+  );
+};

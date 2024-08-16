@@ -1,0 +1,53 @@
+{lead &&
+  Array.isArray(lead.dialog) &&
+  lead.dialog.map((item: any, index: number) => (
+    <>
+    <div key={index} className="flex flex-row-reverse items-center p-4 w-full"style={{
+          zIndex: '1!important'}}>
+      {item.who === 'lead' && item.messages && item.messages.map((message: any, index: number) => (
+        <div key={index} className="flex flex-col h-auto w-auto p-6 bg-[#202020] dark:bg-green-800 tex-white dark:text-white rounded-tl-[15px] rounded-bl-[15px] rounded-br-[15px]">
+            <span className="py-3">Lead:</span>
+          <span>{message.text.body}</span>
+        </div>
+      ))}
+      </div>
+       <div key={index} className="flex flex-row items-center p-4 w-full ">
+      {item.who === 'vera' && (
+        <div className="flex flex-col h-auto  w-5/12 p-6  bg-[#202020] tex-white dark:text-white rounded-tr-[15px] rounded-bl-[15px] rounded-br-[15px]">
+           <span className="py-3">IA:</span>
+          <span>{item.message.text.body}</span>
+        </div>
+      )}
+    </div>
+    </>
+  ))}
+
+
+
+
+
+
+
+
+
+
+  {/* {lead && Array.isArray(lead.dialog) && lead.dialog.map((item: any, index: number) => (
+              <div key={index} className="flex flex-row-reverse items-center p-4 w-full">
+                <div className="h-auto w-auto p-6 bg-[#202020] dark:bg-green-800 tex-white dark:text-white rounded-tl-[15px] rounded-bl-[15px] rounded-br-[15px]">
+                  <span>{item.messages.text.body}</span> 
+                </div>
+              </div>
+            ))} */}
+
+            // COM OS NOMES DO Lead {Object.entries(leadsData.leads) && leadsData.leads.map((lead) => (
+          <div key={lead.id} 
+        
+          onClick={(e) => {
+            e.stopPropagation(); // Evita a propagação do evento
+            handleIntentClick(lead);
+          }}
+          className="mb-2 bg-strokedark m-5 flex gap-3 items-center cursor-pointer">
+            <span className={`left-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-white ${selectedIntentColor?.id === lead.id ? "bg-danger" : "bg-white"}`}></span>
+            <span className="text-blue-500 text-base font-bold ml-2">{lead.name}</span>
+          </div>
+        ))}

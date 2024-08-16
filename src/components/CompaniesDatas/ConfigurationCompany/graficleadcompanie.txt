@@ -1,0 +1,213 @@
+"use client"
+import { useState, useEffect } from 'react';
+import type { Empresa } from "@/types/empresa";
+import { getLeadsCompanyUnitiesAction } from "@/actions/leads/get-leads-company-unities.action";
+import { FiMoreVertical, FiPlus } from "react-icons/fi";
+import { formatarTelefone } from "@/util/formatPhone";
+import {
+  FaTelegramPlane,
+  FaYoutube,
+  FaUsers,
+  FaPlus,
+  FaWhatsapp,
+  FaUserSlash,
+} from "react-icons/fa";
+//import ChangeCompanyButton from "../buttons/change-table-button-modal";
+import Image from "next/image";
+import Link from "next/link";
+import CardDataStats from "./CardDataStats";
+import AreaChartComponent from "./chartsteste";
+import CompsDateCharts from './ChatsCompanieList';
+import { Lead } from '@/types/leads/leads';
+
+export default function GraficosLeeads({
+  companyData,
+  leadData,
+}: {
+  companyData: Empresa;
+  leadData:Lead[];
+}) {
+   //console.log(leadData,'indo para o component')
+  const leadsConfig = companyData.id;
+ //const leadsCharts =  getLeadsCompanyUnitiesAction(leadsConfig);
+ const [leadsChart, setLeadsChart] = useState<any>(null);
+ const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    function fetchLeadsChart() {
+      const leadsConfig = companyData.id;
+      getLeadsCompanyUnitiesAction(leadsConfig)
+        .then((leadsChartData) => {
+          setLeadsChart(leadsChartData);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error('Erro ao buscar os dados do gráfico de leads:', error);
+          setLoading(false);
+        });
+    }
+
+    fetchLeadsChart();
+  }, [companyData]);
+  
+  return (
+    <>
+    
+   
+      <div className="flex w-full flex-col dark:bg-black bg-white p-4">
+     
+      {loading ? ( // Verifica se está carregando
+        <div
+        // style={{ zIndex: 99999 }}
+        className="relative z-40 top-0 left-0 right-0 bottom-0 h-full flex items-center justify-center p-5 bg-gray-200 dark:bg-[#000] bg-opacity-90"
+      >
+        <div className=" h-auto min-h-[50vh] flex items-center justify-center">
+          <Image
+            src="/assets/funilv.svg"
+            alt=""
+            width={120}
+            height={120}
+            className="animate-spin-2 duration-1800"
+          />
+        </div>
+      </div>
+      ) : (
+     leadsChart && (
+      <>
+        <div className="flex flex-col">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6 xl:grid-cols-3 2xl:gap-7.5 dark:bg-black bg-white ">
+          <CardDataStats
+            title="Base Total"
+            total={leadsChart.total}
+            rate="0.43%"
+            levelUp
+            color="bg-rose-700"
+            leads={leadsChart.leads}
+            status=""
+          >
+            <FaUsers size={20} />
+          </CardDataStats>
+            <CardDataStats
+              title="Sem interesse"
+              total={leadsChart.NOTREPLIED}
+              rate="2.59%"
+              levelUp
+              color="bg-[#ff5926]"
+              leads={leadsChart.leads}
+              status="NOTREPLIED"
+            >
+              <FaWhatsapp size={20} />
+            </CardDataStats>
+            <CardDataStats
+              title="Sem WhatsApp"
+              total={leadsChart.INVALIDNUMBER}
+              rate="2.59%"
+              levelUp
+              color="bg-[#e91f47]"
+              leads={leadsChart.leads}
+              status="INVALIDNUMBER"
+            >
+              <FaWhatsapp size={20} />
+            </CardDataStats>
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-2 2xl:gap-7.5 dark:bg-black bg-white ">
+          <CardDataStats
+              title="Novo"
+              total={leadsChart.NOVO}
+              rate="4.35%"
+              levelUp
+              color="bg-blue-500"
+              leads={leadsChart.leads}
+              status=""
+            >
+              <FaPlus size={20} />
+            </CardDataStats>
+            <CardDataStats
+              title="Em contato"
+              total={leadsChart.STARTED}
+              rate="2.59%"
+              levelUp
+              color="bg-[#ffa726]"
+              leads={leadsChart.leads}
+              status="STARTED"
+            >
+              <FaWhatsapp size={20} />
+            </CardDataStats>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7 dark:bg-black bg-white">
+          <CardDataStats
+            title="Atendimento"
+            total={leadsChart.REPLIED}
+            rate="2.59%"
+            levelUp
+            color="bg-[#17a2b8]"
+            leads={leadsChart.leads}
+            status="REPLIED"
+          >
+            <FaWhatsapp size={20} />
+          </CardDataStats>
+         
+          <CardDataStats
+            title="Com interesse"
+            total={leadsChart.NOTSCHEDULED}
+            rate="0.95%"
+            levelDown
+            color="bg-green-700"
+            leads={leadsChart.leads}
+            status="NOTSCHEDULED"
+          >
+            <FaUserSlash size={20} />
+          </CardDataStats>
+          <CardDataStats
+            title="Agendamento"
+            total={leadsChart.SCHEDULED}
+            rate="0.95%"
+            levelDown
+            color="bg-green-700"
+            leads={leadsChart.leads}
+            status="SCHEDULED"
+          >
+            <FaUserSlash size={20} />
+          </CardDataStats>
+          <CardDataStats
+            title="Sem interesse"
+            total={leadsChart.STOPPED}
+            rate="0.95%"
+            levelDown
+            color="bg-red-700"
+            leads={leadsChart.leads}
+            status="STOPPED"
+          >
+            <FaUserSlash size={20} />
+          </CardDataStats>
+        </div>
+        <div className="w-full m-4 dark:bg-neutral-800/30 bg-white">
+          <AreaChartComponent metric={leadsChart} />
+        </div>
+        {/* <div  className="w-full m-4 dark:bg-neutral-800/30 bg-white ">
+          <CompsDateCharts metric={leadData}/>
+        </div> */}
+        <div className='w-full m-4 dark:bg-neutral-800/30 bg-white'>
+         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-2 2xl:gap-7 ">
+    <div className="w-full p-10">
+    <CompsDateCharts metric={leadData}/>
+    </div>
+    <div className=" overflow-hidden">
+    <CompsDateCharts metric={leadData}/>
+        </div>
+
+    </div>
+  </div>
+        </>
+       
+      )
+    )}
+   
+      </div>
+     
+    </>
+  );
+}

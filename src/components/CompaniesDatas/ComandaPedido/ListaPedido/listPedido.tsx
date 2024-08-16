@@ -1,0 +1,495 @@
+"use client";
+
+import { MouseEventHandler, useEffect, useState } from "react";
+import { Comando } from "@/types/comando/comando";
+import { toast } from "react-toastify";
+import { saveCommandMessage } from "@/actions/companies/comando/post-command.action";
+import { MdDelete, MdEdit, MdAccessTime, MdOutlinePause } from "react-icons/md";
+import { FiMoreVertical, FiPlus } from "react-icons/fi";
+import { FaPlus } from "react-icons/fa";
+import { IoIosTime } from "react-icons/io";
+import { getClientAuthenticatedAction } from "@/actions/users/get-client-authenticated.action";
+import { getClientCommandAction } from "@/actions/companies/comando/get-all-client-comando.action";
+import { IUser } from "@/interfaces";
+
+
+interface InterMessages {
+  content: string;
+  intentmessage: any;
+}
+interface SelectedIntent {
+  messages: InterMessages[]; // Assuming InterMessages is a type defined elsewhere
+  // other properties...
+}
+
+export default function ListaDePedido({
+  commandData,
+}: {
+  commandData: Comando[];
+}) {
+ 
+  const [userDatas, setUserData] = useState<IUser | null>(null);
+
+  const [intentList, setIntentList] = useState<Array<Comando>>(commandData);
+  const [intentListMessage, setIntentListMessage] =
+    useState<Array<Comando>>(commandData);
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+  const [isEditing, setIsEditing] = useState(false);
+
+  const [editMode, setEditMode] = useState(
+    Array(intentListMessage.length).fill(false)
+  );
+  const [editedMessages, setEditedMessages] = useState<Array<Comando>>([]);
+
+  useEffect(() => {
+    // Define an async function to fetch the user data
+    const fetchUserData = async () => {
+      try {
+        // Await the promise to get the resolved value
+        const userData = getClientAuthenticatedAction();
+        // Set the state with the resolved value
+        setUserData(userData);
+      } catch (error) {
+        // Handle errors if any
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    // Call the async function to fetch user data when the component mounts
+    fetchUserData();
+  }, []);
+
+  const handleInputChange = (e: any, index: any, field: any) => {
+    const { value } = e.target;
+    const updatedMessages: any = [...editedMessages];
+
+    // Verifique se o índice está dentro dos limites do array
+    if (index >= 0 && index < updatedMessages.length) {
+      updatedMessages[index][field] = value;
+      setEditedMessages(updatedMessages);
+    } else {
+      console.error("Índice fora dos limites do array.");
+    }
+  };
+
+
+  const handleEditClick = (index: any) => {
+    const updatedEditMode = [...editMode];
+    updatedEditMode[index] = true;
+    setEditMode(updatedEditMode);
+    handleInsertIntent();
+  };
+
+  const handleConfirmClick = (index: any) => {
+
+    const updatedEditMode = [...editMode];
+    updatedEditMode[index] = false;
+    setEditMode(updatedEditMode);
+  };
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const [selectedIntentName, setSelectedIntentName] = useState<string | null>(
+    null
+  );
+
+  const [selectedIntent, setSelectedIntent] = useState<SelectedIntent | null>(
+    null
+  );
+
+  const [selectedIntentColor, setSelectedIntentColor] = useState(null);
+  const [selectedTab, setSelectedTab] = useState("utterances");
+  const [isLoading, setIsLoading] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [editMessageIndex, setEditMessageIndex] = useState(-1);
+  const [editMessageContent, setEditMessageContent] = useState("");
+  const [editIntentName, setEditIntentName] = useState("");
+
+  const [newIntentContent, setNewIntentContent] = useState("");
+
+  const [newPhone, setPhone] = useState("");
+  const [newEndereco, setEndereco] = useState("");
+  const [newReferencia, setReferencia] = useState("");
+  const [newCelula, setCelula] = useState("");
+
+  const [newIntentType, setNewIntentType] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  //lista de produto
+  const [prodBatata, setProdutcBabata] = useState(true);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleInsertIntent = () => {
+
+    handleInsert(newIntentContent, newIntentType);
+    setNewIntentContent("");
+    setNewIntentType("");
+    setIsModalOpen(true);
+  };
+
+  const handleIntentClick = (messages: any, intent: any) => {
+    console.log(messages, "minha state", intent);
+    setIsLoading(true);
+    setSelectedIntentName(intent);
+    setTimeout(() => {
+      setSelectedIntent({ messages });
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const handleTabClick = (tab: string) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setSelectedTab(tab);
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const handleEdit = (index: number, content: string, intentName: string) => {
+    setEditMessageIndex(index);
+    setEditMessageContent(content);
+    setEditIntentName(intentName);
+    setEditModalOpen(true);
+  };
+
+  const handleDelete = (index: number, content: string, intentName: string) => {
+    // Adicione aqui a lógica para excluir a mensagem com o índice fornecido
+    setEditMessageIndex(index);
+    setEditMessageContent(content);
+    setEditIntentName(intentName);
+    setDeleteModalOpen(true);
+    console.log("Excluir mensagem de índice:", index);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalOpen(false);
+    setDeleteModalOpen(false);
+  };
+
+  const handleSaveEdit = () => {
+
+    if (selectedIntent && editMessageIndex !== -1) {
+      // Obtém o nome da intenção
+      const intentName = selectedIntentName;
+
+      // Obtém as mensagens da intenção selecionada
+      const messages = selectedIntent.messages;
+
+      // Atualiza a mensagem correspondente ao índice editado
+      messages[editMessageIndex].content = editMessageContent;
+
+    } else {
+      toast.error("Erro ao editar a mensagem. Intenção ou índice inválidos.");
+      console.error("Erro ao editar a mensagem: Intenção ou índice inválidos.");
+    }
+  };
+
+  const handleDeleteEdit = () => {
+    if (selectedIntent && editMessageIndex !== -1) {
+      // Obtém o nome da intenção
+      const intentName = selectedIntentName;
+      // Obtém as mensagens da intenção selecionada
+      const index = editMessageIndex;
+
+    } else {
+      toast.error("Erro ao editar a mensagem. Intenção ou índice inválidos.");
+      console.error("Erro ao editar a mensagem: Intenção ou índice inválidos.");
+    }
+  };
+
+  const handleInsertClick: MouseEventHandler<HTMLButtonElement> = (event) => {
+    // Chame handleInsert com os argumentos necessários
+    handleInsert(newIntentContent, newIntentType);
+  };
+
+  const handleInsert = (newIntentContent: string, newIntentType: string) => {
+    console.log("Botão 'Adicionar comando' clicado!");
+    setIsModalOpen(true);
+    if (newIntentContent && newIntentType) {
+      const parsedContent =
+        newIntentType === "hold"
+          ? parseInt(newIntentContent, 10)
+          : newIntentContent;
+
+      console.info(newIntentContent, parsedContent, "etsa na pagina");
+
+      saveCommandMessage(newIntentContent, newIntentType)
+        .then(() => {
+          toast.success("Comando adicionado com sucesso!");
+          getClientCommandAction()
+            .then((newData) => {
+              setIntentListMessage(newData);
+            })
+            .catch((error) => {
+              console.error("Erro ao buscar os novos dados:", error);
+            });
+          handleCloseEditModal();
+          setIsModalOpen(false);
+        })
+        .catch((error) => {
+          toast.error(
+            "Erro ao adicionar o comando. Por favor, tente novamente."
+          );
+          console.error("Erro ao adicionar o comando:", error);
+        });
+    } else {
+      toast.error("Erro ao editar a mensagem. Intenção ou índice inválidos.");
+      console.error("Erro ao editar a mensagem: Intenção ou índice inválidos.");
+    }
+  };
+
+
+ 
+
+  const [checkboxes, setCheckboxes] = useState([
+    { id: 1, label: 'Batata palha', checked: true },
+    { id: 2, label: 'Catchup', checked: true },
+    { id: 3, label: 'Ervilha', checked: true },
+    { id: 4, label: 'Maionese', checked: true },
+    { id: 5, label: 'Milho', checked: true },
+    { id: 6, label: 'Molho vermelho', checked: true },
+    { id: 7, label: 'Molho 4 queijos', checked: true },
+    { id: 8, label: 'Mostarda', checked: true },
+    { id: 9, label: 'Pão', checked: true },
+    { id: 10, label: 'Queijo ralado', checked: true },
+    { id: 11, label: 'Salsicha', checked: true },
+  ]);
+   // Função para alterar o estado de um checkbox específico
+   const handleCheckboxChange = (id:any) => {
+    setCheckboxes((prevCheckboxes) =>
+      prevCheckboxes.map((checkbox) =>
+        checkbox.id === id
+          ? { ...checkbox, checked: !checkbox.checked }
+          : checkbox
+      )
+    );
+  };
+  return (
+    <div className="col-span-12 h-auto  shadow-default   dark:bg-transparent xl:col-span-12">
+      <div
+        className="flex flex-col items-start justify-between relative  w-full  p-4"
+        style={{ zIndex: "99999!important" }}
+      >
+        <div className=" py-4  border-b border-neutral-300 w-full">
+          <h2 className="text-2xl font-bold mb-4 text-neutral-500 dark:text-neutral-300">
+            Relatorio de pedidos
+          </h2>
+
+        </div>
+      </div>
+      <div className="overflow-y-auto mt-4 grid grid-cols-12 gap-4 md:mt-2 md:gap-6  2xl:gap-7 pl-4 pr-4 ">
+       
+        {Array.isArray(intentListMessage) &&
+          intentListMessage.map((commands, index) => (
+            <>
+              <div
+                key={commands.id}
+                className="col-span-12 flex flex-col w-full overflow-y-auto max-h-auto bg-white dark:bg-neutral-800 p-7.5 shadow-md dark:border-stroke dark:shadow-lg rounded-2xl p-4"
+              >
+                <div className="flex flex-row justify-between items-center relative h-auto w-full min-w-[200px] my-2">
+                  <span className="text-gray-800 dark:text-white text-lg">
+                    {commands.name}
+                  </span>
+                  {((userDatas && userDatas?.profile === "master") ||
+                    userDatas?.profile === "manager") && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenDropdownId(
+                          openDropdownId === commands.id
+                            ? null
+                            : commands.id ?? null
+                        )
+                      }
+                      className="flex items-center justify-center p-2 w-10 h-10 text-sm font-medium text-gray-700 hover:bg-rose-700 dark:hover:bg-neutral-600 focus:outline-none rounded-full"
+                      id={`options-menu-${index}`} // Adicione um identificador único para cada dropdown
+                      aria-expanded={
+                        openDropdownId === commands.id ? "true" : "false"
+                      }
+                      aria-haspopup="true"
+                    >
+                      <FiMoreVertical className="ml-1 text-danger" />
+                    </button>
+                  )}
+                </div>
+                {openDropdownId === commands.id && (
+                  <div className="z-10 min-h-[60px] origin-top-right absolute right-20  mt-2 mr-12 p-4 w-56 rounded-md  bg-gray-100 shadow dark:bg-neutral-600 ring-1 ring-black ring-opacity-5">
+                    <div
+                      className="py-4"
+                      role="menu"
+                      aria-orientation="vertical"
+                      aria-labelledby={`options-menu-${index}`} // Use o mesmo identificador único aqui
+                    >
+                      <button
+                        className="flex px-4 py-2 gap-2 items-center justify-start text-sm text-neutral-400 dark:text-white hover:bg-neutral-900/50 hover:bg-opacity-20 font-extrabold hover:dark:bg-neutral-900/50 hover:dark:bg-opacity-20 w-full text-left rounded-lg"
+                        onClick={() => handleEditClick(index)}
+                        role="edit"
+                      >
+                        <MdEdit size={12} />
+                        Editar
+                      </button>
+                      <button
+                        className="flex px-4 py-2 gap-2 items-center justify-start text-sm text-red-800  hover:bg-red-600/40 hover:bg-opacity-20 hover:dark:bg-red-600/40 hover:dark:bg-opacity-20 w-full text-left rounded-lg"
+                        // onClick={() =>handleDeactivateClick("template")} // Defina o tipo como 'template'
+                        role="delete"
+                      >
+                        <MdOutlinePause size={12} />
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className="relative h-auto w-full min-w-[200px] my-4">
+                  <textarea
+                    disabled={!editMode[index]}
+                    //type="text"
+                    value={commands.descritivo}
+                    onChange={(e) => handleInputChange(e, index, "descritivo")}
+                    className="text-gray-800 dark:text-white peer h-full min-h-[80px] w-full overflow-hidden rounded-md border border-neutral-300 bg-transparent px-3 py-3 font-sans text-base font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-1 focus:border-rose-700  focus:outline-0 disabled:border-1 disabled:bg-blue-gray-50"
+                    placeholder=" "
+                  />
+                </div>
+
+                <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                  <div className="w-full xl:w-1/2">
+                    <label className="mb-2.5 block text-black dark:text-white">
+                      Comando
+                    </label>
+                    <input
+                      disabled={!editMode[index]}
+                      value={commands.name}
+                      onChange={(e) => handleInputChange(e, index, "name")}
+                      type="text"
+                      placeholder=" "
+                      className="w-full rounded border border-neutral-300 bg-transparent py-3 px-5 text-base font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input  focus:border-1 focus:border-rose-700  focus:outline-0"
+                    />
+                  </div>
+                  <div className="w-full xl:w-1/2">
+                    <label className="mb-2.5 block text-black dark:text-white">
+                      Continuidade
+                    </label>
+                    <div className="w-full gap-4 flex flex-row justify-start rounded border border-neutral-300 bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:bg-form-input focus:border-1 focus:border-rose-700  focus:outline-0">
+                      <input
+                        checked={true}
+                        onChange={(e) => setIsActive(e.target.checked)}
+                        id="bordered-checkbox-2"
+                        type="checkbox"
+                        value=""
+                        name="bordered-checkbox"
+                        className="w-5  text-rose-700 bg-gray-100 rounded border border-neutral-300 bg-transparent py-3 px-5 text-base font-medium outline-none transition focus:border-rose-700 active:border-rose-700 disabled:cursor-default disabled:bg-whiter dark:border-form-neutral-600 dark:bg-form-input dark:focus:border-rose-700"
+                      />
+
+                      <label
+                        htmlFor="bordered-checkbox-2"
+                        className=" block text-black dark:text-white"
+                      >
+                        ativo
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative  h-auto w-full min-w-[200px]">
+                  {editMode[index] && (
+                    <button
+                      onClick={handleConfirmClick}
+                      className=" w-full py-2 px-4 mt-4 bg-green-700 text-white rounded-md shadow-md hover:bg-green-800 focus:outline-none"
+                    >
+                      Confirmar alteração
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <hr className="col-span-12 border border-neutral-300 " />
+            </>
+          ))}
+      </div>
+
+      {/* Modal de Edição */}
+      {editModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
+          <div className=" bg-neutral-800 p-8 rounded-lg">
+            <div className="flex justify-between">
+              <h3 className="text-xl font-bold mb-4 dark:text-white text-gray-500">
+                Editar mensagem
+              </h3>{" "}
+              <button
+                onClick={handleCloseEditModal}
+                className="hover:dark:bg-[#78777766] text-gray-300 px-4 py-2 rounded-full mr-2"
+              >
+                x
+              </button>
+            </div>
+
+            <textarea
+              value={editMessageContent}
+              onChange={(e) => setEditMessageContent(e.target.value)}
+              className="border border-neutral-300 focus:border-rose-600 rounded-md px-3 py-2 mb-2 w-full bg-transparent h-auto max-h-80"
+              placeholder="Conteúdo da Mensagem"
+              id="customMessageTextarea"
+            />
+            <button
+              onClick={handleSaveEdit}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2"
+            >
+              Salvar
+            </button>
+            <button
+              onClick={handleCloseEditModal}
+              className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de deletar */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
+          <div className=" bg-neutral-800 p-8 rounded-lg">
+            <div className="flex justify-between items-center  py-4 gap-8">
+              <span className="text-xl font-bold  dark:text-white text-gray-500">
+                Excluir Mensagem
+              </span>
+              <button
+                onClick={handleCloseEditModal}
+                className="hover:dark:bg-[#78777766] text-gray-300 px-4 py-2 rounded-full mr-2"
+              >
+                x
+              </button>
+            </div>
+            <textarea
+              disabled
+              value={editMessageContent}
+              onChange={(e) => setEditMessageContent(e.target.value)}
+              className="border border-neutral-300 focus:border-rose-600 rounded-md px-3 py-2 mb-2 w-full bg-transparent h-auto max-h-80"
+              placeholder="Conteúdo da Mensagem"
+              id="customMessageTextarea"
+            />
+            <button
+              onClick={handleDeleteEdit}
+              className="flex flex-row justify-center items-center gap-2 dark:bg-rose-700  dark:text-white w-full px-4 py-2 rounded-md mr-2  dark:hover:dark:bg-[#515151] hover:dark:text-rose-700"
+            >
+              <MdDelete className="" size={18} />
+              <span className=" font-bold text-[12px]">Excluir</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
