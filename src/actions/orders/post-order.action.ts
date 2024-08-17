@@ -18,6 +18,7 @@ export const postOrderAction = async (formData: FormData) => {
         phone: formData.get("sellerPhone"),
       },
       order: {
+        amount: formData.get("amount"),
         hour: formData.get("hour"),
         observation: formData.get("observation"),
       },
