@@ -9,8 +9,8 @@ export const signInAction = async (formData: FormData) => {
       password: formData.get("password"),
     };
     const { data } = await api.post("auth/login", rawFormData);
-    if (data.access_token && data.user) {
-      cookies().set("acl0", data.access_token, { secure: true });
+    if (data.token && data.user) {
+      cookies().set("acl0", data.token, { secure: true });
       cookies().set("acl1", JSON.stringify(data.user), { secure: true });
 
       api.defaults.headers.Authorization = `Bearer ${data.access_token}`;
